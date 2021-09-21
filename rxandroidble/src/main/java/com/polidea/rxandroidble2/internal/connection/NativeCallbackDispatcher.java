@@ -50,6 +50,13 @@ class NativeCallbackDispatcher {
         }
     }
 
+    @TargetApi(26 /* Build.VERSION_CODES.O */)
+    void notifyNativePhyUpdateCallback(BluetoothGatt gatt, int phy, int status) {
+        if (nativeCallback != null) {
+            nativeCallback.onPhyUpdate(gatt, (0xff & phy), (0xff & (phy >> 8)), status);
+        }
+    }
+
     void notifyNativeReadRssiCallback(BluetoothGatt gatt, int rssi, int status) {
         if (nativeCallback != null) {
             nativeCallback.onReadRemoteRssi(gatt, rssi, status);

@@ -31,10 +31,8 @@ import io.reactivex.Scheduler;
 import io.reactivex.functions.Function;
 import java.util.concurrent.TimeUnit;
 
-
 @ConnectionScope
 public class RxBleGattCallback {
-
     private final Scheduler callbackScheduler;
     final BluetoothGattProvider bluetoothGattProvider;
     final DisconnectionRouter disconnectionRouter;
@@ -49,6 +47,7 @@ public class RxBleGattCallback {
     final Output<ByteAssociation<BluetoothGattDescriptor>> writeDescriptorOutput = new Output<>();
     final Output<Integer> readRssiOutput = new Output<>();
     final Output<Integer> changedMtuOutput = new Output<>();
+    final Output<Integer> changedPhyOutput = new Output<>();
     final Output<ConnectionParameters> updatedConnectionOutput = new Output<>();
     private final Function<BleGattException, Observable<?>> errorMapper = new Function<BleGattException, Observable<?>>() {
         @Override
@@ -73,6 +72,7 @@ public class RxBleGattCallback {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             LoggerUtil.logCallback("onConnectionStateChange", gatt, status, newState);
+
             nativeCallbackDispatcher.notifyNativeConnectionStateCallback(gatt, status, newState);
             super.onConnectionStateChange(gatt, status, newState);
             bluetoothGattProvider.updateBluetoothGatt(gatt);
@@ -207,6 +207,19 @@ public class RxBleGattCallback {
             }
         }
 
+        @Override
+        public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+            int cp = (txPhy | (rxPhy << 8));
+            LoggerUtil.logCallback("onPhyUpdate", gatt, status, cp);
+            nativeCallbackDispatcher.notifyNativePhyUpdateCallback(gatt, cp, status);
+            super.onPhyUpdate(gatt, txPhy, rxPhy, status);
+
+            if (changedPhyOutput.hasObservers()
+                    && !propagateErrorIfOccurred(changedPhyOutput, gatt, status, BleGattOperationType.ON_PHY_CHANGED)) {
+                changedPhyOutput.valueRelay.accept(cp);
+            }
+        }
+
         // This callback first appeared in Android 8.0 (android-8.0.0_r1/core/java/android/bluetooth/BluetoothGattCallback.java)
         // It is hidden since
         @SuppressWarnings("unused")
@@ -313,6 +326,10 @@ public class RxBleGattCallback {
 
     public Observable<Integer> getOnMtuChanged() {
         return withDisconnectionHandling(changedMtuOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
+    }
+
+    public Observable<Integer> getOnPhyUpdate() {
+        return withDisconnectionHandling(changedPhyOutput).delay(0, TimeUnit.SECONDS, callbackScheduler);
     }
 
     public Observable<ByteAssociation<UUID>> getOnCharacteristicRead() {

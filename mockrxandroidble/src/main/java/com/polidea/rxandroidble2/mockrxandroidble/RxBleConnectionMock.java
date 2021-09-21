@@ -73,6 +73,7 @@ public class RxBleConnectionMock implements RxBleConnection {
     private RxBleDeviceServices rxBleDeviceServices;
     private int rssi;
     private int currentMtu = 23;
+    private int currentPhy = 0;
     private Map<UUID, Observable<byte[]>> characteristicNotificationSources;
     private Map<UUID, RxBleCharacteristicReadCallback> characteristicReadCallbacks;
     private Map<UUID, RxBleCharacteristicWriteCallback> characteristicWriteCallbacks;
@@ -121,6 +122,17 @@ public class RxBleConnectionMock implements RxBleConnection {
     @Override
     public int getMtu() {
         return currentMtu;
+    }
+
+    @Override
+    public Single<Integer> requestPhy(final int phy) {
+        return Single.fromCallable(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                currentPhy = phy;
+                return phy;
+            }
+        });
     }
 
     public int getRssi() {

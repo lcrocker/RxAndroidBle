@@ -575,6 +575,9 @@ public interface RxBleConnection {
      */
     int getMtu();
 
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    Single<Integer> requestPhy(int phy);
+
     /**
      * <b>This method requires deep knowledge of RxAndroidBLE internals. Use it only as a last resort if you know
      * what your are doing.</b>

@@ -74,6 +74,12 @@ public class OperationsProviderImpl implements OperationsProvider {
     }
 
     @Override
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    public PhyRequestOperation providePhyChangeOperation(int phy) {
+        return new PhyRequestOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, phy);
+    }
+
+    @Override
     public CharacteristicReadOperation provideReadCharacteristic(BluetoothGattCharacteristic characteristic) {
         return new CharacteristicReadOperation(rxBleGattCallback, bluetoothGatt, timeoutConfiguration, characteristic);
     }

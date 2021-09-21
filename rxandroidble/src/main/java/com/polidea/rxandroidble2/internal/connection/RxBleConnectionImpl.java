@@ -47,8 +47,11 @@ import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_SIGNED_WRIT
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE;
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE;
 
+import android.util.Log;
+
 @ConnectionScope
 public class RxBleConnectionImpl implements RxBleConnection {
+    static final String TAG = "RBCI";
 
     private final ConnectionOperationQueue operationQueue;
     final RxBleGattCallback gattCallback;
@@ -120,12 +123,19 @@ public class RxBleConnectionImpl implements RxBleConnection {
     @Override
     @RequiresApi(21 /* Build.VERSION_CODES.LOLLIPOP */)
     public Single<Integer> requestMtu(int mtu) {
+        Log.i(TAG, "*** requested mtu ***");
         return operationQueue.queue(operationsProvider.provideMtuChangeOperation(mtu)).firstOrError();
     }
 
     @Override
     public int getMtu() {
         return mtuProvider.getMtu();
+    }
+
+    @Override
+    @RequiresApi(26 /* Build.VERSION_CODES.O */)
+    public Single<Integer> requestPhy(int phy) {
+        return operationQueue.queue(operationsProvider.providePhyChangeOperation(phy)).firstOrError();
     }
 
     @Override
