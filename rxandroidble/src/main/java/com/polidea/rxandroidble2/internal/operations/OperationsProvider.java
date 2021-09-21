@@ -41,10 +41,4 @@ public interface OperationsProvider {
             long delay,
             TimeUnit timeUnit
     );
-
-    PreferredPhyUpdateOperation providePreferredPhyUpdateOperation(
-        int txPhy,
-        int rxPhy,
-        int phOptions
-    );
 }
