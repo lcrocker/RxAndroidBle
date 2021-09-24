@@ -10,10 +10,11 @@ import com.polidea.rxandroidble2.internal.connection.RxBleGattCallback;
 import bleshadow.javax.inject.Inject;
 
 import io.reactivex.Single;
+import android.util.Log;
 
 @RequiresApi(26 /* Build.VERSION_CODES.O */)
 public class PhyRequestOperation extends SingleResponseOperation<Integer> {
-
+    static final String TAG = "PRO";
     private final int phy;
 
     @Inject
@@ -32,6 +33,7 @@ public class PhyRequestOperation extends SingleResponseOperation<Integer> {
 
     @Override
     protected boolean startOperation(BluetoothGatt bluetoothGatt) {
+        Log.i(TAG, "*** set preferred phy = " + phy);
         bluetoothGatt.setPreferredPhy((0xff & phy), (0xff & (phy >> 8)), (0xff & (phy >> 16)));
         return true;
     }
